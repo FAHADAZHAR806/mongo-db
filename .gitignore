@@ -1,0 +1,14 @@
+# Environment Variables - Secret hai kabhi push mat karo!
+.env
+
+# Node Modules - Bohot bari hoti hai, zaroorat nahi push karne ki
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
