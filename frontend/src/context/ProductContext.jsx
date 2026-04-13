@@ -10,7 +10,7 @@ import axios from "axios";
 
 const ProductCtx = createContext();
 
-const BASE_URL = "http://localhost:5000/api/products";
+const BASE_URL = "/api/products";
 
 export function ProductProvider({ children }) {
   const [products, setProducts] = useState([]);
