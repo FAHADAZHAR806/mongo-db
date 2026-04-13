@@ -7,13 +7,15 @@ const productRoutes = require("./src/routes/productRoutes");
 const app = express();
 
 // Middleware
+// Humne CORS ko simple kar diya hai taake local aur production dono handle ho jayein
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://your-frontend.vercel.app"], // Add your Vercel URL here
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: true, // Ye automatically request bhejne wale URL ko allow kar dega
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
   }),
 );
+
 app.use(express.json());
 
 // Connect Database
@@ -22,18 +24,19 @@ connectDB();
 // Routes
 app.use("/api/products", productRoutes);
 
-// Root route (helpful for verifying deployment)
+// Root route
 app.get("/", (req, res) => {
-  res.send("API is running...");
+  res.send("API is running properly...");
 });
 
-// Vercel needs the app exported
-module.exports = app;
-
-// Dynamic port for production
+// Port configuration
 const PORT = process.env.PORT || 5000;
+
+// Vercel handles listen differently, but for local we need this:
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () =>
-    console.log(`Server running on port http://localhost:${PORT}`),
+    console.log(`Server running on: http://localhost:${PORT}`),
   );
 }
+
+module.exports = app;

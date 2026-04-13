@@ -10,7 +10,14 @@ import axios from "axios";
 
 const ProductCtx = createContext();
 
-const BASE_URL = "/api/products";
+// SMART URL LOGIC:
+const isLocal = window.location.hostname === "localhost";
+
+// Agar local hai toh localhost:5000, agar deployed hai toh relative path
+// LEKIN: Relative path tabhi kaam karega jab vercel.json sahi ho (Step niche dekhein)
+const BASE_URL = isLocal
+  ? "http://localhost:5000/api/products"
+  : "/api/products";
 
 export function ProductProvider({ children }) {
   const [products, setProducts] = useState([]);
