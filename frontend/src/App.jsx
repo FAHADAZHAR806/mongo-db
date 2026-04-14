@@ -6,6 +6,7 @@ import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
 import AddProduct from "./pages/AddProduct";
 import EditProduct from "./pages/EditProduct";
+import ViewProduct from "./pages/ViewProduct";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/add" element={<AddProduct />} />
               <Route path="/edit/:id" element={<EditProduct />} />
+              <Route path="/view/:id" element={<ViewProduct />} />
             </Routes>
           </main>
         </div>
