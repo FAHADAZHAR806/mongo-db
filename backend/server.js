@@ -7,10 +7,9 @@ const productRoutes = require("./src/routes/productRoutes");
 const app = express();
 
 // Middleware
-// Humne CORS ko simple kar diya hai taake local aur production dono handle ho jayein
 app.use(
   cors({
-    origin: ["*"], // Ye automatically request bhejne wale URL ko allow kar dega
+    origin: "*", // Sub ko allow kar dein taake CORS error na aaye
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   }),
@@ -24,19 +23,17 @@ connectDB();
 // Routes
 app.use("/api/products", productRoutes);
 
-// Root route
+// Root route (Railway health check ke liye)
 app.get("/", (req, res) => {
-  res.send("API is running properly...");
+  res.send("API is running properly on Railway!");
 });
 
 // Port configuration
 const PORT = process.env.PORT || 5000;
 
-// Vercel handles listen differently, but for local we need this:
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () =>
-    console.log(`Server running on: http://localhost:${PORT}`),
-  );
-}
+// FIX: Listen ko hamesha chalna chahiye Railway par
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port: ${PORT}`);
+});
 
 module.exports = app;
