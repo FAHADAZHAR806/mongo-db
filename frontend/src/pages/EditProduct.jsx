@@ -4,7 +4,7 @@ import { useProducts } from "../context/ProductContext";
 import FormField from "../components/FormField";
 
 export default function EditProduct() {
-  const { id } = useParams(); // MongoDB _id string from the URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const { getProduct, updateProduct } = useProducts();
 
@@ -22,45 +22,54 @@ export default function EditProduct() {
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null); // Error state add ki hai
 
-  // 1. Load the product data when the component mounts
   useEffect(() => {
     let isMounted = true;
 
-    getProduct(id).then((p) => {
-      if (isMounted && p) {
-        setForm({
-          title: p.title || "",
-          price: p.price || "",
-          stock: p.stock || "",
-          category: p.category || "",
-          brand: p.brand || "",
-          description: p.description || "",
-          thumbnail: p.thumbnail || "",
-          discountPercentage: p.discountPercentage || "",
-          rating: p.rating || "",
-        });
-        setLoading(false);
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const p = await getProduct(id);
+        if (isMounted && p) {
+          setForm({
+            title: p.title || "",
+            price: p.price || "",
+            stock: p.stock || "",
+            category: p.category || "",
+            brand: p.brand || "",
+            description: p.description || "",
+            thumbnail: p.thumbnail || "",
+            discountPercentage: p.discountPercentage || "",
+            rating: p.rating || "",
+          });
+        } else if (!p) {
+          setError("Product not found");
+        }
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        setError("Failed to load product details.");
+      } finally {
+        if (isMounted) setLoading(false); // Request fail ho ya pass, loading stop hogi
       }
-    });
+    };
+
+    fetchProduct();
 
     return () => {
       isMounted = false;
     };
   }, [id, getProduct]);
 
-  // Handle input changes dynamically
   const handle = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  // 2. Optimized Submit Function
   const submit = async (e) => {
     e.preventDefault();
     if (busy) return;
 
     setBusy(true);
     try {
-      // Send the string 'id' (NOT Number(id)) to match MongoDB
       await updateProduct(id, {
         ...form,
         price: parseFloat(form.price) || 0,
@@ -68,11 +77,11 @@ export default function EditProduct() {
         discountPercentage: parseFloat(form.discountPercentage) || 0,
         rating: parseFloat(form.rating) || 0,
       });
-
-      // Navigation is handled in the ProductContext.jsx upon success
+      navigate("/"); // Success par wapis inventory par
     } catch (error) {
       console.error("Failed to update product:", error);
-      setBusy(false); // Only reset if we didn't navigate away
+      alert("Error updating product. Please try again.");
+      setBusy(false);
     }
   };
 
@@ -87,9 +96,22 @@ export default function EditProduct() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <p className="text-red-500 font-bold">{error}</p>
+        <button
+          onClick={() => navigate("/")}
+          className="text-blue-600 underline"
+        >
+          Go back to Inventory
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Back Button */}
       <button
         className="mb-6 flex items-center gap-2 text-gray-600 hover:text-blue-600 font-medium transition-colors"
         onClick={() => navigate("/")}
@@ -113,7 +135,6 @@ export default function EditProduct() {
         </div>
 
         <div className="p-8">
-          {/* Image Preview */}
           {form.thumbnail && (
             <div className="mb-8 flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
               <img
@@ -199,7 +220,6 @@ export default function EditProduct() {
               </div>
             </div>
 
-            {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
               <button
                 type="submit"

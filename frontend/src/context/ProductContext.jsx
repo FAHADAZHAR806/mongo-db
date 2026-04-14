@@ -10,11 +10,7 @@ import axios from "axios";
 
 const ProductCtx = createContext();
 
-// SMART URL LOGIC:
 const isLocal = window.location.hostname === "localhost";
-
-// Agar local hai toh localhost:5000, agar deployed hai toh relative path
-// LEKIN: Relative path tabhi kaam karega jab vercel.json sahi ho (Step niche dekhein)
 const BASE_URL = isLocal
   ? "http://localhost:5000/api/products"
   : "https://mongo-db-production-262b.up.railway.app/api/products";
@@ -38,13 +34,12 @@ export function ProductProvider({ children }) {
     setError(null);
     try {
       const response = await axios.get(BASE_URL);
+      // Ensure we always have an array
       setProducts(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
-      // This catches the "Network Error"
-      setError("Connection failed. Is the backend running?");
+      setError("Failed to fetch products. Check backend connection.");
       console.error("Fetch Error:", err);
     } finally {
-      // THIS IS CRITICAL: It stops the "Loading" loop even if the server is dead
       setLoading(false);
     }
   }, []);
@@ -53,8 +48,9 @@ export function ProductProvider({ children }) {
     fetchProducts();
   }, [fetchProducts]);
 
-  /* ── Fetch single product ── */
+  /* ── Fetch single product (For Edit Page) ── */
   const getProduct = useCallback(async (id) => {
+    // Note: We don't set global loading here because EditProduct has its own
     try {
       const response = await axios.get(`${BASE_URL}/${id}`);
       return response.data;
@@ -67,17 +63,17 @@ export function ProductProvider({ children }) {
   /* ── Add product ── */
   const addProduct = useCallback(
     async (data) => {
-      setLoading(true); // START LOADING
+      setLoading(true);
       try {
         const response = await axios.post(BASE_URL, data);
         setProducts((prev) => [response.data, ...prev]);
         showToast("Product added successfully!");
         navigate("/");
       } catch (err) {
-        console.error("Add Error:", err.response?.data || err.message);
+        console.error("Add Error:", err);
         showToast("Failed to add product.", "error");
       } finally {
-        setLoading(false); // STOP LOADING
+        setLoading(false);
       }
     },
     [navigate],
@@ -86,19 +82,23 @@ export function ProductProvider({ children }) {
   /* ── Update product ── */
   const updateProduct = useCallback(
     async (id, data) => {
-      setLoading(true); // START LOADING
+      setLoading(true);
       try {
         const response = await axios.put(`${BASE_URL}/${id}`, data);
         const updated = response.data;
 
+        // Update local state so search/list updates immediately
         setProducts((prev) => prev.map((p) => (p._id === id ? updated : p)));
+
         showToast("Product updated successfully!");
+        // Success ke baad hi navigate karein
         navigate("/");
       } catch (err) {
         console.error("Update Error:", err);
-        showToast("Failed to update product.", "error");
+        showToast("Update failed.", "error");
+        throw err; // Form ko batane ke liye ke error aaya hai
       } finally {
-        setLoading(false); // STOP LOADING
+        setLoading(false);
       }
     },
     [navigate],
@@ -106,29 +106,35 @@ export function ProductProvider({ children }) {
 
   /* ── Delete product ── */
   const deleteProduct = useCallback(async (id) => {
-    setLoading(true); // START LOADING
+    setLoading(true);
     try {
       await axios.delete(`${BASE_URL}/${id}`);
       setProducts((prev) => prev.filter((p) => p._id !== id));
-      showToast("Product deleted successfully.");
+      showToast("Deleted successfully.");
     } catch (err) {
       console.error("Delete Error:", err);
-      showToast("Failed to delete product.", "error");
+      showToast("Delete failed.", "error");
     } finally {
-      setLoading(false); // STOP LOADING
+      setLoading(false);
     }
   }, []);
 
-  const filteredProducts = searchTerm.trim()
-    ? products.filter((p) =>
-        p.title.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    : products;
+  // SEARCH LOGIC: Title, Brand aur Category teeno par search chalega
+  const filteredProducts = products.filter((p) => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return true;
+
+    return (
+      p.title?.toLowerCase().includes(term) ||
+      p.category?.toLowerCase().includes(term) ||
+      p.brand?.toLowerCase().includes(term)
+    );
+  });
 
   return (
     <ProductCtx.Provider
       value={{
-        products: filteredProducts,
+        products: filteredProducts, // Ye list search ke mutabiq hogi
         allProducts: products,
         loading,
         error,
@@ -144,18 +150,18 @@ export function ProductProvider({ children }) {
     >
       {children}
 
-      {/* Global toast */}
+      {/* Toast UI */}
       {toast && (
-        <div className="fixed bottom-5 right-5 z-50 animate-bounce">
+        <div className="fixed bottom-5 right-5 z-[9999]">
           <div
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg shadow-lg text-white transition-all duration-300 ${
-              toast.type === "success" ? "bg-green-600" : "bg-red-600"
+            className={`flex items-center gap-3 px-6 py-3 rounded-xl shadow-2xl text-white transform transition-all animate-in slide-in-from-right ${
+              toast.type === "success" ? "bg-emerald-600" : "bg-rose-600"
             }`}
           >
-            <span className="font-bold">
+            <span className="text-xl font-bold">
               {toast.type === "success" ? "✓" : "✕"}
             </span>
-            {toast.msg}
+            <span className="font-medium">{toast.msg}</span>
           </div>
         </div>
       )}
@@ -164,5 +170,8 @@ export function ProductProvider({ children }) {
 }
 
 export function useProducts() {
-  return useContext(ProductCtx);
+  const context = useContext(ProductCtx);
+  if (!context)
+    throw new Error("useProducts must be used within ProductProvider");
+  return context;
 }
