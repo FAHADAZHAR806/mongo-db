@@ -10,10 +10,7 @@ const app = express();
 // Humne CORS ko simple kar diya hai taake local aur production dono handle ho jayein
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://product-management-gilt-psi.vercel.app/",
-    ], // Ye automatically request bhejne wale URL ko allow kar dega
+    origin: ["*"], // Ye automatically request bhejne wale URL ko allow kar dega
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   }),

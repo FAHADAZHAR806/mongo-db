@@ -17,7 +17,7 @@ const isLocal = window.location.hostname === "localhost";
 // LEKIN: Relative path tabhi kaam karega jab vercel.json sahi ho (Step niche dekhein)
 const BASE_URL = isLocal
   ? "http://localhost:5000/api/products"
-  : "mongo-db-production-262b.up.railway.app";
+  : "https://mongo-db-production-262b.up.railway.app/api/products";
 
 export function ProductProvider({ children }) {
   const [products, setProducts] = useState([]);
