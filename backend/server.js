@@ -3,6 +3,7 @@ require("dotenv").config();
 const cors = require("cors");
 const connectDB = require("./src/config/db");
 const productRoutes = require("./src/routes/productRoutes");
+const authRoutes = require("./src/routes/authRoutes");
 
 const app = express();
 
@@ -22,6 +23,7 @@ connectDB();
 
 // Routes
 app.use("/api/products", productRoutes);
+app.use("/api/auth", authRoutes);
 
 // Root route (Railway health check ke liye)
 app.get("/", (req, res) => {
