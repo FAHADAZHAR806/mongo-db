@@ -7,13 +7,17 @@ export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const API_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api/auth/register"
+      : "https://mongo-db-production-262b.up.railway.app/api/auth/register";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const { data } = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        API_URL,
         formData,
       );
 

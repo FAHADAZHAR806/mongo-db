@@ -11,12 +11,15 @@ export default function Register() {
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+const API_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api/auth/register"
+      : "https://mongo-db-production-262b.up.railway.app/api/auth/register";
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/auth/register", formData);
+      await axios.post(API_URL, formData);
       toast.success("Account created! Please login.");
       navigate("/login");
     } catch (err) {

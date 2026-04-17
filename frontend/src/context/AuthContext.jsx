@@ -6,6 +6,10 @@ const AuthCtx = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const API_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api/auth/register"
+      : "https://mongo-db-production-262b.up.railway.app/api/auth/register";
 
   // App load hote hi check karo ke kya user pehle se login hai?
   useEffect(() => {
@@ -18,7 +22,7 @@ export function AuthProvider({ children }) {
 
   // Login Function
   const login = async (email, password) => {
-    const { data } = await axios.post("http://localhost:5000/api/auth/login", {
+    const { data } = await axios.post(API_URL, {
       email,
       password,
     });
