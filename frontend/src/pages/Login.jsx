@@ -9,17 +9,14 @@ export default function Login() {
   const navigate = useNavigate();
   const API_URL =
     window.location.hostname === "localhost"
-      ? "http://localhost:5000/api/auth/register"
-      : "https://mongo-db-production-262b.up.railway.app/api/auth/register";
+      ? "http://localhost:5000/api/auth/login"
+      : "https://mongo-db-production-262b.up.railway.app/api/auth/login";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post(
-        API_URL,
-        formData,
-      );
+      const { data } = await axios.post(API_URL, formData);
 
       // ── SAVE USER DATA & TOKEN ──
       // Ye line hamare 'Protect' routes ke liye pass ka kaam karegi

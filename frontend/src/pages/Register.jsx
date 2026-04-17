@@ -11,18 +11,24 @@ export default function Register() {
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-const API_URL =
+
+  // ── URL CONFIG ──
+  // Hum sirf BASE_URL rakhte hain bina endpoint ke
+  const BASE_URL =
     window.location.hostname === "localhost"
-      ? "http://localhost:5000/api/auth/register"
-      : "https://mongo-db-production-262b.up.railway.app/api/auth/register";
+      ? "http://localhost:5000/api/auth"
+      : "https://mongo-db-production-262b.up.railway.app/api/auth";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(API_URL, formData);
+      // Yahan endpoint append karein: /register
+      await axios.post(`${BASE_URL}/register`, formData);
       toast.success("Account created! Please login.");
       navigate("/login");
     } catch (err) {
+      // Backend agar "User already exists" bhej raha hai toh wo yahan dikhega
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);

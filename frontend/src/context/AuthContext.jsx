@@ -6,12 +6,13 @@ const AuthCtx = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const API_URL =
-    window.location.hostname === "localhost"
-      ? "http://localhost:5000/api/auth/register"
-      : "https://mongo-db-production-262b.up.railway.app/api/auth/register";
 
-  // App load hote hi check karo ke kya user pehle se login hai?
+  // 1. BASE_URL ko fix karein (endpoint hata dein)
+  const BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api/auth"
+      : "https://mongo-db-production-262b.up.railway.app/api/auth";
+
   useEffect(() => {
     const savedUser = localStorage.getItem("userInfo");
     if (savedUser) {
@@ -20,9 +21,10 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // Login Function
+  // 2. Login Function mein endpoint sahi karein
   const login = async (email, password) => {
-    const { data } = await axios.post(API_URL, {
+    // Yahan BASE_URL + "/login" hoga
+    const { data } = await axios.post(`${BASE_URL}/login`, {
       email,
       password,
     });
